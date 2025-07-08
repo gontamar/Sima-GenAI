@@ -1,0 +1,31 @@
+2025-07-08 16:27:50,104 - root - INFO - Starting SiMa.ai genai server with 0 192.168.1.20
+2025-07-08 16:27:50,104 - root - INFO - Started standalone HTTP server in a separate thread
+2025-07-08 16:27:50,104 - root - INFO - Standalone HTTP server is running on port 8081
+2025-07-08 16:27:50,108 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on https://127.0.0.1:5000
+ * Running on https://192.168.48.144:5000
+2025-07-08 16:27:50,108 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-07-08 16:27:51,650 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "GET / HTTP/1.1" 200 -
+2025-07-08 16:27:51,681 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "[36mGET /static/style.css HTTP/1.1[0m" 304 -
+2025-07-08 16:27:51,682 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "[36mGET /static/socket.io.min.js HTTP/1.1[0m" 304 -
+2025-07-08 16:27:51,683 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "[36mGET /static/default.jpg HTTP/1.1[0m" 304 -
+2025-07-08 16:27:51,695 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "[35m[1mGET /video_feed HTTP/1.1[0m" 500 -
+2025-07-08 16:27:51,701 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "[36mGET /static/main.js HTTP/1.1[0m" 304 -
+2025-07-08 16:27:51,704 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "[36mGET /static/newDashboard.png HTTP/1.1[0m" 304 -
+2025-07-08 16:27:51,706 - werkzeug - ERROR - Error on request:
+Traceback (most recent call last):
+  File "/home/test/Downloads/simaai-genai-demo/simaProject/simaProject/lib/python3.10/site-packages/werkzeug/serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+  File "/home/test/Downloads/simaai-genai-demo/simaProject/simaProject/lib/python3.10/site-packages/werkzeug/serving.py", line 333, in execute
+    for data in application_iter:
+  File "/home/test/Downloads/simaai-genai-demo/simaProject/simaProject/lib/python3.10/site-packages/werkzeug/wsgi.py", line 256, in __next__
+    return self._next()
+  File "/home/test/Downloads/simaai-genai-demo/simaProject/simaProject/lib/python3.10/site-packages/werkzeug/wrappers/response.py", line 32, in _iter_encoded
+    for item in iterable:
+  File "/home/test/Downloads/simaai-genai-demo/app.py", line 298, in generate_video_stream
+    raise IOError(f'Cannot open video source {source}')
+OSError: Cannot open video source 0
+2025-07-08 16:27:51,717 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "GET /socket.io/?EIO=4&transport=polling&t=PVfhrPX HTTP/1.1" 200 -
+2025-07-08 16:27:51,734 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "POST /socket.io/?EIO=4&transport=polling&t=PVfhrPm&sid=orowQntGH8ZHYPfZAAAA HTTP/1.1" 200 -
+2025-07-08 16:27:51,736 - werkzeug - INFO - 127.0.0.1 - - [08/Jul/2025 16:27:51] "GET /socket.io/?EIO=4&transport=polling&t=PVfhrPn&sid=orowQntGH8ZHYPfZAAAA HTTP/1.1" 200 -

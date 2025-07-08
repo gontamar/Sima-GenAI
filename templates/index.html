@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L&T Technology Services MMAI Demo</title>
+    <script src="static/socket.io.min.js"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<!-- Background div -->
+<div style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url('{{ url_for('static', filename='newDashboard.png') }}');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: -1;
+"></div>
+  </head>
+  <body>
+    
+    <!-- <div id="title_bar">
+      <h2 id="heading"><span>L&T Technology Services MMAI Demo</span></h2>
+    </div>
+     -->
+    <!-- <div id="logo">
+      <img src="{{ url_for('static', filename='mlsoc-modalix-m25.svg') }}"></img>
+    </div> -->
+
+    <!-- <div id="status"> -->
+    <!--   LTTS MMAI ready to run.. -->
+    <!-- </div> -->
+
+    <div class="resetControl" style="position:absolute; top:10%; right:20%; width:140px; height:50px; font-size:14px; font-weight: bold;">
+      <div id="image-controls">
+        <input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
+      </div>
+      <br/>
+      <table class="buttons">
+        <button id="capture" onclick="captureImage()">Capture Live</button>
+        <button id="startRecord">Begin Record</button>
+        <button id="stopRecord" disabled>End Record</button>
+        <button id="sceneAnalyze">Analyze Scene</button>
+        <button id="reset">Reset</button>
+      </table>
+    </div>
+
+    <div class="flex-container" style="display: flex; flex-direction: column; align-items: center;">
+ 
+  <!-- Top row: Preview and Live Stream side by side -->
+  <div class="top-row" style="display: flex; justify-content: center; gap: 20px;">
+ 
+    <!-- Preview -->
+    <div class="flex-item">
+      <p style="text-align:center">Preview</p>
+      <div id="imagePreviewContainer" style="border: 1px solid #DDDDDD;">
+        <img id="imagePreview" src="{{ url_for('static', filename='default.jpg') }}" alt="Image Preview" style="object-fit: contain; display: block;">
+      </div>
+    </div>
+ 
+    <!-- Live Stream -->
+    <div class="flex-item">
+      <p style="text-align:center">Live Stream</p>
+      <div id="stream">
+        <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Video Stream">
+        <br><br>
+      </div>
+    </div>
+ 
+  </div>
+ 
+  <!-- Results box below -->
+  <div class="flex-item" style="margin-top: 30px;">
+    <p style="text-align:center">Results</p>
+    <div id="querybox" style="width: 640px; height: 480px; border: 1px solid #DDDDDD; font-size: 16px; font-weight: bold;">
+      <p id="question" disabled></p>
+      <p id="results"></p>
+    </div>
+  </div>
+ 
+</div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+  </body>
+</html>
