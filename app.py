@@ -164,7 +164,15 @@ class AppContext:
             self.socketio.emit('update', {"hello" : "world"})
             return render_template('index.html')
 
-        @self.app.route('/upload', methods=['POST'])
+        @self.app.route('/upload', methods=['POST'])@self.app.route('/video_feed')
+
+        def video_feed():
+
+            """Route for video streaming."""
+
+            return Response(generate_video_stream(self.camidx),
+
+                            mimetype='multipart/x-mixed-replace; boundary=frame') this is for 
         def upload():
             audio_file = None
             image_file = None
