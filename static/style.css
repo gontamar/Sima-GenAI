@@ -58,7 +58,8 @@ body {
 
 #startRecord, #stopRecord , #capture, #sceneAnalyze, #reset {
     width:100%;
-    margin-top:1.5px;
+    margin-top:61.5px;
+    margin-left: 300px;
     margin-bottom:1.5px;
     padding:2px;
     border-radius:5px;
@@ -120,6 +121,7 @@ body {
     justify-content: center; /* Center images horizontally */
     padding: 20px;
 }
+
 .flex-item img {
     width: 640px;
     height: 480px;
@@ -196,13 +198,29 @@ body {
 
 /* Set a fixed size for the video feed */
 #video-stream {
-    width: 640px;
-    height: 480px;
-    border: 2px solid #000;
+    width: 542px;
+    height: 375px;
+    border: 2px solid #de0a0a;
     object-fit: cover; /* Ensures the video stream fills the container */
+    /* margin-left: 100px;  */
+    margin-top: -45px;
 }
 
-#imagePreviewContainer img {
-    display:block;
-    margin:auto;
+/* #imagePreviewContainer {
+    margin-top: 100px; 
+    margin-left: -150px;  
+    width: 500px;
+    height: 500px;
+    object-fit: cover; /* Ensures the video stream fills the container }*/ 
+
+#imagePreviewContainer {
+    margin-top: -45px;
+    margin-left: -13px;
+    width: 542px;
+    height: 375px;
+    overflow: hidden; /* prevents image overflow */
+    object-fit: contain;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
