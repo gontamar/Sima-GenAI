@@ -14,7 +14,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-image: url('{{ url_for('static', filename='newDashboard.png') }}');
+  background-image: url('{{ url_for('static', filename='finalDash.png') }}');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -35,9 +35,9 @@
     <!--   LTTS MMAI ready to run.. -->
     <!-- </div> -->
 
-    <div class="resetControl" style="position:absolute; top:10%; right:20%; width:140px; height:50px; font-size:14px; font-weight: bold;">
+    <div class="resetControl" style="position:absolute; margin-left: 500px; top:10%; right:20%; width:140px; height:50px; font-size:14px; font-weight: bold;">
       <div id="image-controls">
-        <input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
+        <!-- <input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)"> -->
       </div>
       <br/>
       <table class="buttons">
@@ -56,7 +56,7 @@
  
     <!-- Preview -->
     <div class="flex-item">
-      <p style="text-align:center">Preview</p>
+      <p style="text-align:center"></p>
       <div id="imagePreviewContainer" style="border: 1px solid #DDDDDD;">
         <img id="imagePreview" src="{{ url_for('static', filename='default.jpg') }}" alt="Image Preview" style="object-fit: contain; display: block;">
       </div>
@@ -64,7 +64,7 @@
  
     <!-- Live Stream -->
     <div class="flex-item">
-      <p style="text-align:center">Live Stream</p>
+      <p style="text-align:center"></p>
       <div id="stream">
         <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Video Stream">
         <br><br>
@@ -75,8 +75,8 @@
  
   <!-- Results box below -->
   <div class="flex-item" style="margin-top: 30px;">
-    <p style="text-align:center">Results</p>
-    <div id="querybox" style="width: 640px; height: 480px; border: 1px solid #DDDDDD; font-size: 16px; font-weight: bold;">
+    <p style="text-align:center"></p>
+    <div id="querybox" style="width: 1101px; height: 78px; margin-top: -157px; margin-left: -17px; border: 1px solid #DDDDDD; font-size: 16px; font-weight: bold;">
       <p id="question" disabled></p>
       <p id="results"></p>
     </div>
