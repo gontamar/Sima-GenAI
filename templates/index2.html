@@ -1,0 +1,291 @@
+next new folder templates 
+Under templates/index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiMa.ai GENAI Demo (Local Mock)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { color: #0056b3; text-align: center; }
+        .controls, .display { margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #e9f7ff; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-right: 10px; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        video { width: 100%; max-width: 400px; height: auto; border: 1px solid #ccc; background-color: #000; margin-top: 10px; display: block; margin-left: auto; margin-right: auto;}
+        img { max-width: 100%; height: auto; border: 1px solid #ccc; margin-top: 10px; display: block; margin-left: auto; margin-right: auto; }
+        .response-box { border: 1px solid #ccc; padding: 15px; min-height: 80px; background-color: #f9f9f9; border-radius: 5px; overflow-y: auto; margin-top: 10px; }
+        .progress-message { color: #555; font-style: italic; margin-top: 10px; }
+        .query-display { margin-top: 10px; font-weight: bold; color: #007bff;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SiMa.ai GENAI Demo (Local Mock)</h1>
+        <p>This is a local demonstration of the SiMa.ai GENAI application. The SiMa.ai server functionality is **mocked** for local execution. You can capture images, speak, and see simulated responses.</p>
+
+        <div class="controls">
+            <h2>Camera Feed</h2>
+            <video id="videoFeed" autoplay muted></video>
+            <button id="captureImageBtn">Capture Image & Analyze</button>
+            <button id="uploadImageFromFileBtn">Upload Image File & Analyze</button>
+            <input type="file" id="imageFileInput" accept="image/*" style="display: none;">
+        </div>
+
+        <div class="controls">
+            <h2>Audio Input</h2>
+            <button id="startRecordingBtn">Start Recording</button>
+            <button id="stopRecordingBtn" disabled>Stop Recording</button>
+            <p id="recordingStatus">Idle</p>
+        </div>
+
+        <div class="display">
+            <h2>Results</h2>
+            <p class="progress-message" id="progressMessage"></p>
+            <p class="query-display" id="queryDisplay"></p>
+            <div id="responseDisplay" class="response-box">
+                <!-- Responses will appear here -->
+            </div>
+            <img id="capturedImageDisplay" src="" alt="Captured Image" style="display: none;">
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const videoFeed = document.getElementById('videoFeed');
+        const captureImageBtn = document.getElementById('captureImageBtn');
+        const uploadImageFromFileBtn = document.getElementById('uploadImageFromFileBtn');
+        const imageFileInput = document.getElementById('imageFileInput');
+        const startRecordingBtn = document.getElementById('startRecordingBtn');
+        const stopRecordingBtn = document.getElementById('stopRecordingBtn');
+        const recordingStatus = document.getElementById('recordingStatus');
+        const responseDisplay = document.getElementById('responseDisplay');
+        const capturedImageDisplay = document.getElementById('capturedImageDisplay');
+        const progressMessage = document.getElementById('progressMessage');
+        const queryDisplay = document.getElementById('queryDisplay');
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let cameraStream = null;
+
+        // --- Socket.IO Event Handlers ---
+        socket.on('connect', () => {
+            console.log('Connected to server via Socket.IO');
+            progressMessage.textContent = "Connected to server. Ready.";
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from server');
+            progressMessage.textContent = "Disconnected from server.";
+        });
+
+        socket.on('update', (data) => {
+            if (data.progress) {
+                progressMessage.textContent = data.progress;
+            }
+            if (data.results) {
+                // For 'update' results, if not streaming, display directly
+                if (!responseDisplay.textContent.endsWith(data.results.trim()) || responseDisplay.textContent === "") {
+                    // Only append if it's new text or box is empty
+                    responseDisplay.textContent = data.results.trim();
+                }
+            }
+        });
+
+        socket.on('talk', (data) => {
+            // For 'talk' (streaming) results, append them
+            if (data.results) {
+                // If it's a new "sentence" clear previous content
+                if (data.results.trim().endsWith('.') || data.results.trim().endsWith('?') || data.results.trim().endsWith('!')) {
+                    responseDisplay.textContent = data.results.trim(); // Replace with the full sentence
+                } else {
+                    // Otherwise, append words
+                    responseDisplay.textContent += (responseDisplay.textContent.length > 0 ? ' ' : '') + data.results.trim();
+                }
+                responseDisplay.scrollTop = responseDisplay.scrollHeight; // Scroll to bottom
+            }
+        });
+
+        // --- Camera Functions ---
+        async function startCamera() {
+            try {
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                }
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoFeed.srcObject = stream;
+                cameraStream = stream;
+                // Start the video feed to Flask
+                fetch('/video_feed')
+                    .then(response => {
+                        // This fetch is just to initiate the video stream on the server.
+                        // The actual stream is handled by setting videoFeed.srcObject
+                        // and Flask's multipart response.
+                        console.log("Video feed requested from Flask.");
+                    })
+                    .catch(error => console.error("Error requesting video feed:", error));
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                alert("Could not access camera. Please ensure you have a webcam and grant permissions.");
+            }
+        }
+
+        captureImageBtn.addEventListener('click', async () => {
+            progressMessage.textContent = "Capturing image...";
+            queryDisplay.textContent = "";
+            responseDisplay.textContent = "";
+            capturedImageDisplay.style.display = 'none';
+
+            try {
+                const response = await fetch('/capture_and_send', { method: 'POST' });
+                const data = await response.json();
+                if (data.status_code === 200) {
+                    capturedImageDisplay.src = data.image_src;
+                    capturedImageDisplay.style.display = 'block';
+                    // Automatically trigger analysis with default query after capture
+                    sendAnalysisRequest(null, null); // Query will be default LLAVA query, image from camera.jpg
+                } else {
+                    progressMessage.textContent = `Error: ${data.error}`;
+                }
+            } catch (error) {
+                console.error("Error capturing and sending image:", error);
+                progressMessage.textContent = "Error capturing image. Check server logs.";
+            }
+        });
+
+        uploadImageFromFileBtn.addEventListener('click', () => {
+            imageFileInput.click(); // Trigger file input click
+        });
+
+        imageFileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            progressMessage.textContent = "Uploading image file...";
+            queryDisplay.textContent = "";
+            responseDisplay.textContent = "";
+            capturedImageDisplay.style.display = 'none';
+
+            const formData = new FormData();
+            formData.append('image_data', file);
+
+            try {
+                const response = await fetch('/upload_image', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                queryDisplay.textContent = `Question: ${result.question}`;
+                progressMessage.textContent = "Image uploaded and analysis started.";
+
+                // Display the uploaded image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    capturedImageDisplay.src = e.target.result;
+                    capturedImageDisplay.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+
+            } catch (error) {
+                console.error("Error uploading image file:", error);
+                progressMessage.textContent = "Error uploading image file. Check server logs.";
+            } finally {
+                imageFileInput.value = ''; // Clear file input
+            }
+        });
+
+        // --- Audio Recording Functions ---
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    sendAudioAndImage(audioBlob);
+                    stream.getTracks().forEach(track => track.stop()); // Stop mic access
+                };
+
+                mediaRecorder.start();
+                recordingStatus.textContent = "Recording...";
+                startRecordingBtn.disabled = true;
+                stopRecordingBtn.disabled = false;
+                progressMessage.textContent = "Recording started...";
+                queryDisplay.textContent = "";
+                responseDisplay.textContent = "";
+            } catch (err) {
+                console.error("Error accessing microphone:", err);
+                alert("Could not access microphone. Please grant permissions.");
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                recordingStatus.textContent = "Processing audio...";
+                startRecordingBtn.disabled = false;
+                stopRecordingBtn.disabled = true;
+            }
+        }
+
+        async function sendAudioAndImage(audioBlob) {
+            progressMessage.textContent = "Sending audio for transcription and analysis...";
+            const formData = new FormData();
+            formData.append('audio_data', audioBlob, 'audio.webm');
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                queryDisplay.textContent = `Question: ${result.question}`;
+                progressMessage.textContent = "Audio uploaded and analysis started.";
+            } catch (error) {
+                console.error("Error uploading audio:", error);
+                progressMessage.textContent = "Error uploading audio. Check server logs.";
+            }
+        }
+
+        async function sendAnalysisRequest(audioBlob, imageBlob) {
+            progressMessage.textContent = "Sending request for analysis...";
+            const formData = new FormData();
+            if (audioBlob) {
+                formData.append('audio_data', audioBlob, 'audio.webm');
+            }
+            if (imageBlob) {
+                formData.append('image_data', imageBlob, 'image.jpg');
+            }
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                queryDisplay.textContent = `Question: ${result.question}`;
+                progressMessage.textContent = "Analysis started.";
+            } catch (error) {
+                console.error("Error during analysis request:", error);
+                progressMessage.textContent = "Error during analysis. Check server logs.";
+            }
+        }
+
+        // Event Listeners
+        startRecordingBtn.addEventListener('click', startRecording);
+        stopRecordingBtn.addEventListener('click', stopRecording);
+
+        // Start camera feed on page load
+        window.addEventListener('load', startCamera);
+    </script>
+</body>
+</html>
