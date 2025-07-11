@@ -104,6 +104,7 @@ class AppContext:
     def __init__(self):
         self.app = None
         self.model_manager = ModelManager()
+        self.uploaded_video_filename = None
         self.talk_ctrl = TalkController()
         self.socketio = None
         
@@ -164,15 +165,8 @@ class AppContext:
             self.socketio.emit('update', {"hello" : "world"})
             return render_template('index.html')
 
-        @self.app.route('/upload', methods=['POST'])@self.app.route('/video_feed')
 
-        def video_feed():
-
-            """Route for video streaming."""
-
-            return Response(generate_video_stream(self.camidx),
-
-                            mimetype='multipart/x-mixed-replace; boundary=frame') this is for 
+        @self.app.route('/upload', methods=['POST'])
         def upload():
             audio_file = None
             image_file = None
@@ -316,6 +310,7 @@ def generate_video_stream(source):
             frame_bytes = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
 
 def capture_image():
     """Capture a single frame from the camera."""
