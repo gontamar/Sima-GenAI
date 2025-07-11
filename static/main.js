@@ -33,41 +33,108 @@ function enableButtons() {
     document.getElementById("reset").disabled = false;
 }
 
-function previewImage(event) {
+// function previewImage(event) {
+//     const file = event.target.files[0];
+//     if (file) {
+//         const reader = new FileReader();
+//         reader.onload = function(e) {
+//             const preview = document.getElementById('imagePreview');
+//             preview.src = e.target.result;
+//             preview.style.display = 'block';  // Show the image preview
+//         }
+//         reader.readAsDataURL(file);
+//     }
+// }
+function handleFile(event) {
     const file = event.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const preview = document.getElementById('imagePreview');
-            preview.src = e.target.result;
-            preview.style.display = 'block';  // Show the image preview
-        }
-        reader.readAsDataURL(file);
+    if (!file) return;
+
+    const previewImage = document.getElementById("imagePreview");
+    const videoPreview = document.getElementById("videoPreview");
+    const videoSource = document.getElementById("videoSource");
+
+    const fileURL = URL.createObjectURL(file);
+    const fileType = file.type;
+
+    if (fileType.startsWith('video/')) {
+        // Hide image, show video
+        previewImage.style.display = 'none';
+        videoPreview.style.display = 'block';
+        videoSource.src = fileURL;
+        videoPreview.load();
+    } else if (fileType.startsWith('image/')) {
+        // Hide video, show image
+        videoPreview.style.display = 'none';
+        previewImage.style.display = 'block';
+        previewImage.src = fileURL;
+    } else {
+        alert("Unsupported file type. Please upload an image or video.");
     }
 }
 
-async function captureImage() {
-    try {
-        const response = await fetch('/capture_and_send', { method: 'POST' });
-        const result = await response.json();
 
-        // Update status and display the captured image
-        // document.getElementById("status").textContent = "Image sent. Server response: " + result.response;
+// async function captureImage() {
+//     try {
+//         const response = await fetch('/capture_and_send', { method: 'POST' });
+//         const result = await response.json();
+
+//         // Update status and display the captured image
+//         // document.getElementById("status").textContent = "Image sent. Server response: " + result.response;
         
-        // Display the captured image if available
-        if (result.image_src) {
-            const capturedImage = document.getElementById("imagePreview");
-            capturedImage.src = result.image_src;
-            capturedImage.style.display = "block";
+//         // Display the captured image if available
+//         if (result.image_src) {
+//             const capturedImage = document.getElementById("imagePreview");
+//             capturedImage.src = result.image_src;
+//             capturedImage.style.display = "block";
 
-            const fileInput = document.getElementById('fileInput');
-            console.log(fileInput.files.length);
-            fileInput.value = "";
-        }
-    } catch (error) {
-        console.log("Error sending image" ,error);
+//             const fileInput = document.getElementById('fileInput');
+//             console.log(fileInput.files.length);
+//             fileInput.value = "";
+//         }
+//     } catch (error) {
+//         console.log("Error sending image" ,error);
+//     }
+// }
+async function captureImage() {
+  const videoPreview = document.getElementById("videoPreview");
+  const previewImage = document.getElementById("imagePreview");
+  const canvas = document.getElementById("captureCanvas");
+  const context = canvas.getContext("2d");
+
+  if (videoPreview.currentSrc === "" || videoPreview.paused) {
+    alert("No video is playing to capture.");
+    return;
+  }
+
+  // Set canvas to video dimensions
+  canvas.width = videoPreview.videoWidth;
+  canvas.height = videoPreview.videoHeight;
+  context.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
+
+  // Convert to blob
+  canvas.toBlob(async function(blob) {
+    const formData = new FormData();
+    formData.append('image_data', blob, 'snapshot.jpg');
+
+    try {
+      const response = await fetch('/upload_image', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+    //   document.getElementById("question").style.visibility = 'visible';
+    //   document.getElementById("question").textContent = "Q: " + data.question;
+
+      // Show captured image preview
+      const url = URL.createObjectURL(blob);
+      previewImage.src = url;
+      previewImage.style.display = "block";
+    } catch (err) {
+      console.error("Error uploading snapshot:", err);
     }
+  }, "image/jpeg");
 }
+
 
 async function startRecording() {
     question.textContent = '';
@@ -250,16 +317,35 @@ function playTextAsSpeech() {
     isTalking = false;
 }
 
+// function resetImage() {
+//     const previewImage = document.getElementById("imagePreview");
+//     previewImage.src = '/static/default.jpg';
+
+//     const fileIn = document.getElementById('fileInput');
+//     fileIn.value = '';
+
+//     question.textContent = '';
+//     results.textContent = '';
+// }
 function resetImage() {
     const previewImage = document.getElementById("imagePreview");
-    previewImage.src = '/static/default.jpg';
-
     const fileIn = document.getElementById('fileInput');
+    const videoPreview = document.getElementById("videoPreview");
+    const videoSource = document.getElementById("videoSource");
+
+    previewImage.src = '/static/default.jpg';
+    previewImage.style.display = 'block';
+
+    videoSource.src = '';
+    videoPreview.load();
+    videoPreview.style.display = 'none';
+
     fileIn.value = '';
 
     question.textContent = '';
     results.textContent = '';
 }
+
 
 document.getElementById("startRecord").addEventListener("click", function() {
     startRecording();
@@ -288,4 +374,7 @@ document.getElementById("stopRecord").addEventListener("click", function() {
     document.getElementById("startRecord").disabled = true;
     document.getElementById("stopRecord").disabled = true;
     document.getElementById("capture").disabled = true;
+});
+document.getElementById("capture").addEventListener("click", function() {
+    captureImage();
 });
