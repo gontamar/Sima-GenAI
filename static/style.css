@@ -216,8 +216,8 @@ body {
 #imagePreviewContainer {
     margin-top: -45px;
     margin-left: -13px;
-    width: 542px;
-    height: 375px;
+    width: 493px;
+    height: 332px;
     overflow: hidden; /* prevents image overflow */
     object-fit: contain;
     display: flex;
